@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FarmTrade Daily</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- 로그인 페이지 -->
+  <div id="loginPage" class="flex flex-col items-center justify-center min-h-screen">
+    <img src="https://raw.githubusercontent.com/flathfk/FarmTrade-Daily/main/news-logo.png" alt="FarmTrade Daily" class="w-80 mb-4">
+    <p class="text-sm text-gray-500 mb-6">농산물·원자재 시장 뉴스 구독 서비스</p>
+    <input id="loginUsername" type="text" placeholder="아이디" autocomplete="off" class="border p-2 mb-1 w-64 rounded"/>
+    <input id="loginPassword" type="password" placeholder="비밀번호" autocomplete="off" class="border p-2 mb-3 w-64 rounded"/>
+    <div class="flex items-center gap-2 mb-8 w-64">
+      <input type="checkbox" id="rememberMe">
+      <label for="rememberMe" class="text-xs text-gray-500">아이디 저장</label>
+    </div>
+    <button onclick="login()" class="bg-green-600 text-white px-6 py-2 w-64 rounded mb-2">로그인</button>
+    <button onclick="showRegister()" class="text-sm text-gray-500">회원가입</button>
+  </div>
+
+  <!-- 회원가입 페이지 -->
+  <div id="registerPage" class="hidden flex flex-col items-center justify-center min-h-screen">
+    <img src="https://raw.githubusercontent.com/flathfk/FarmTrade-Daily/main/news-logo.png" alt="FarmTrade Daily" class="w-64 mb-6">
+    <input id="regUsername" type="text" placeholder="아이디" class="border p-2 mb-3 w-64 rounded"/>
+    <input id="regPassword" type="password" placeholder="비밀번호" class="border p-2 mb-3 w-64 rounded"/>
+    <button onclick="register()" class="bg-green-600 text-white px-6 py-2 w-64 rounded mb-2">가입하기</button>
+    <button onclick="showLogin()" class="text-sm text-gray-500">로그인으로 돌아가기</button>
+  </div>
+
+  <!-- 메인 피드 페이지 -->
+  <div id="feedPage" class="hidden">
+
+    <!-- 헤더: 로고 + 사용자명/로그아웃 -->
+    <div class="bg-white border-b">
+      <div class="max-w-4xl mx-auto px-6">
+        <div class="relative flex justify-center items-center py-3">
+          <img src="https://raw.githubusercontent.com/flathfk/FarmTrade-Daily/main/news-logo.png" alt="FarmTrade Daily" class="h-20 w-auto">
+          <div class="absolute top-2 right-0 flex items-center gap-2">
+            <span id="welcomeMsg" class="text-xs text-gray-400"></span>
+            <button onclick="logout()" class="text-sm text-gray-500">로그아웃</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-6 pt-4 pb-4">
+
+      <!-- 카테고리 필터 영역 -->
+      <!-- 그룹 버튼(곡물/축산 등): 그룹 전체 구독/해지 -->
+      <!-- 개별 버튼(옥수수/밀 등): 개별 구독/해지 -->
+      <div class="mb-6 mt-3">
+
+        <!-- 전체 버튼: 클릭 시 전체보기 ↔ 구독 모음 토글 -->
+        <div class="flex items-center gap-2 mb-2">
+          <button onclick="filterCategory('all')" id="filter-all"
+            class="filterBtn px-4 py-1.5 rounded-full text-sm font-bold inline-flex items-center justify-center bg-green-600 text-white">전체</button>
+        </div>
+
+        <!-- 곡물 -->
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <button onclick="toggleGroupSub(['corn','wheat','soybean','oat'])" id="groupSub-grain"
+            class="groupBtn px-4 py-1.5 rounded-full text-xs font-bold border-2 border-gray-400 bg-gray-200 text-gray-700 whitespace-nowrap inline-flex items-center gap-1">📦 곡물</button>
+          <button onclick="filterAndSub('corn')" id="filter-corn"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🌽 옥수수 <span class="text-green-600 ml-0.5">+</span></button>
+          <button onclick="filterAndSub('wheat')" id="filter-wheat"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🌾 밀 <span class="text-green-600 ml-0.5">+</span></button>
+          <button onclick="filterAndSub('soybean')" id="filter-soybean"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🫘 대두 <span class="text-green-600 ml-0.5">+</span></button>
+          <button onclick="filterAndSub('oat')" id="filter-oat"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🌿 귀리 <span class="text-green-600 ml-0.5">+</span></button>
+        </div>
+
+        <!-- 축산 -->
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <button onclick="toggleGroupSub(['cattle','feeder','pork'])" id="groupSub-livestock"
+            class="groupBtn px-4 py-1.5 rounded-full text-xs font-bold border-2 border-gray-400 bg-gray-200 text-gray-700 whitespace-nowrap inline-flex items-center gap-1">🐄 축산</button>
+          <button onclick="filterAndSub('cattle')" id="filter-cattle"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🐄 생우 <span class="text-green-600 ml-0.5">+</span></button>
+          <button onclick="filterAndSub('feeder')" id="filter-feeder"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🐂 비육우 <span class="text-green-600 ml-0.5">+</span></button>
+          <button onclick="filterAndSub('pork')" id="filter-pork"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🐷 지육돼지 <span class="text-green-600 ml-0.5">+</span></button>
+        </div>
+
+        <!-- 대두 가공품 -->
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <button onclick="toggleGroupSub(['soyoil','soymeal'])" id="groupSub-soy"
+            class="groupBtn px-4 py-1.5 rounded-full text-xs font-bold border-2 border-gray-400 bg-gray-200 text-gray-700 whitespace-nowrap inline-flex items-center gap-1">🌿 대두 가공품</button>
+          <button onclick="filterAndSub('soyoil')" id="filter-soyoil"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🫙 대두유 <span class="text-green-600 ml-0.5">+</span></button>
+          <button onclick="filterAndSub('soymeal')" id="filter-soymeal"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🟤 대두박 <span class="text-green-600 ml-0.5">+</span></button>
+        </div>
+
+        <!-- 에너지/금속 -->
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <button onclick="toggleGroupSub(['oil','gold','silver','copper'])" id="groupSub-energy"
+            class="groupBtn px-4 py-1.5 rounded-full text-xs font-bold border-2 border-gray-400 bg-gray-200 text-gray-700 whitespace-nowrap inline-flex items-center gap-1">⚡ 에너지/금속</button>
+          <button onclick="filterAndSub('oil')" id="filter-oil"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🛞 원유 <span class="text-green-600 ml-0.5">+</span></button>
+          <button onclick="filterAndSub('gold')" id="filter-gold"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🥇 금 <span class="text-green-600 ml-0.5">+</span></button>
+          <button onclick="filterAndSub('silver')" id="filter-silver"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🥈 은 <span class="text-green-600 ml-0.5">+</span></button>
+          <button onclick="filterAndSub('copper')" id="filter-copper"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🔶 구리 <span class="text-green-600 ml-0.5">+</span></button>
+        </div>
+
+        <!-- 소프트 원자재 -->
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <button onclick="toggleGroupSub(['coffee','cocoa','sugar'])" id="groupSub-soft"
+            class="groupBtn px-4 py-1.5 rounded-full text-xs font-bold border-2 border-gray-400 bg-gray-200 text-gray-700 whitespace-nowrap inline-flex items-center gap-1">☕ 소프트 원자재</button>
+          <button onclick="filterAndSub('coffee')" id="filter-coffee"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">☕ 커피 <span class="text-green-600 ml-0.5">+</span></button>
+          <button onclick="filterAndSub('cocoa')" id="filter-cocoa"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🍫 코코아 <span class="text-green-600 ml-0.5">+</span></button>
+          <button onclick="filterAndSub('sugar')" id="filter-sugar"
+            class="filterBtn px-3 py-1 rounded-full text-xs font-medium inline-flex items-center bg-gray-100 text-gray-600">🍬 설탕 <span class="text-green-600 ml-0.5">+</span></button>
+        </div>
+      </div>
+
+      <!-- 뉴스 목록 -->
+      <div id="newsList" class="mt-4"></div>
+    </div>
+  </div>
+
+  <!-- 기사 상세 모달 -->
+  <div id="articleModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-screen overflow-y-auto">
+      <div class="flex justify-between items-start mb-3">
+        <span id="modalCategory" class="text-xs text-green-600 font-medium"></span>
+        <button onclick="closeModal()" class="text-gray-400 text-lg">✕</button>
+      </div>
+      <h2 id="modalTitle" class="text-lg font-bold mb-2"></h2>
+      <p id="modalDate" class="text-xs text-gray-400 mb-4"></p>
+      <p id="modalContent" class="text-sm text-gray-700 leading-relaxed"></p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
