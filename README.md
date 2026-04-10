@@ -102,7 +102,6 @@ INSERT IGNORE INTO subscriptions (user_id, category) VALUES (?, ?);
 **도메인 연결 (Cloudflare Tunnel)**
 - 별도 도메인 구매 없이 `cloudflared tunnel --url http://localhost:3000` 으로 HTTPS 터널 생성
 - Cloudflare가 자동으로 SSL 인증서를 적용해 누구나 HTTPS로 접속 가능한 상태로 배포
-- 
 ---
 
 ## 5. 트러블슈팅
