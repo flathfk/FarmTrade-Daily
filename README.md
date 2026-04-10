@@ -92,16 +92,14 @@ INSERT IGNORE INTO subscriptions (user_id, category) VALUES (?, ?);
 
 ---
 
-## 4. 인프라 및 배포 기록
-
-**클라우드 서버 (GCP VM)**
-- 인스턴스: GCP VM (bootcamp-1, asia-northeast3-a) · Ubuntu 24.04
-- `/home/flathfk/farmnews` 디렉토리에서 Node.js 서버 실행
-- `tmux` 세션 안에서 서버를 실행해 SSH 연결이 끊겨도 프로세스가 유지되도록 설정
-
-**도메인 연결 (Cloudflare Tunnel)**
-- 별도 도메인 구매 없이 `cloudflared tunnel --url http://localhost:3000` 으로 HTTPS 터널 생성
-- Cloudflare가 자동으로 SSL 인증서를 적용해 누구나 HTTPS로 접속 가능한 상태로 배포
+4. 인프라 및 배포 기록
+클라우드 서버 (GCP VM)
+	•	인스턴스: GCP VM (bootcamp-1, asia-northeast3-a) · Ubuntu 24.04
+	•	/home/flathfk/farmnews 디렉토리에서 Node.js 서버 실행
+	•	nohup node server.js & 로 백그라운드 실행 유지
+도메인 연결 (Cloudflare Tunnel)
+	•	별도 도메인 구매 없이 cloudflared tunnel --url http://localhost:3000 으로 HTTPS 터널 생성
+	•	Cloudflare가 자동으로 SSL 인증서를 적용해 누구나 HTTPS로 접속 가능한 상태로 배포
 ---
 
 ## 5. 트러블슈팅
