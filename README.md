@@ -6,28 +6,27 @@
 
 **배포 주소:** https://use-node-else-drugs.trycloudflare.com
 
-**사용 기술:** HTML, Tailwind CSS, Vanilla JS, Node.js (Express), MariaDB, JWT, GCP, Cloudflare Tunnel
+**사용 기술:** HTML · Tailwind CSS · Vanilla JS · Node.js (Express) · MariaDB · JWT · GCP · Cloudflare Tunnel
 
-**프로젝트 소개:**  
-1차 해커톤에서 만든 FarmTrade 농산물 선물거래 시뮬레이터의 연장선으로, 거래 판단의 근거가 되는 뉴스를 제공하는 구독 서비스입니다. 옥수수·밀·대두 등 곡물부터 원유·금·은·구리 등 에너지/금속, 커피·코코아·설탕 등 소프트 원자재까지 16개 카테고리의 뉴스를 카테고리별로 구독하고 모아볼 수 있습니다.
+**프로젝트 소개:**
+1차 해커톤에서 만든 FarmTrade 농산물 선물거래 시뮬레이터의 연장선입니다. 거래 판단의 근거가 되는 시장 뉴스를 직접 구독하고 모아볼 수 있는 서비스를 목표로 만들었습니다. 옥수수·밀·대두 등 곡물부터 원유·금·은·구리 등 에너지/금속 그리고 커피·코코아·설탕 등 소프트 원자재까지 16개 카테고리의 뉴스를 제공합니다. 카테고리 단위로 구독을 설정하면 로그인 직후 구독 중인 뉴스만 모아서 볼 수 있습니다.
 
 ---
 
 ## 2. 백엔드 구성 및 라우팅
 
 `server.js`에서 설정한 주요 API 경로와 역할입니다.
+모든 `/api/*` 경로는 JWT 인증 미들웨어를 통과해야 접근 가능합니다.
 
 | 메서드 | 경로 | 설명 |
 |--------|------|------|
 | POST | `/register` | 회원가입 (bcrypt 비밀번호 해시화) |
 | POST | `/login` | 로그인 + JWT 발급 (2시간 만료) |
-| GET | `/api/news` | 전체 뉴스 조회 (인증 필요) |
+| GET | `/api/news` | 전체 뉴스 조회 |
 | GET | `/api/news/:category` | 카테고리별 뉴스 조회 |
 | GET | `/api/subscriptions` | 내 구독 카테고리 목록 조회 |
 | POST | `/api/subscriptions` | 구독 추가 |
 | DELETE | `/api/subscriptions/:category` | 구독 해지 |
-
-모든 `/api/*` 경로는 JWT 인증 미들웨어를 통과해야 접근 가능합니다.
 
 ---
 
@@ -53,7 +52,7 @@ CREATE TABLE news (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 구독 테이블
+-- 구독 테이블 (user_id + category 조합에 UNIQUE KEY 설정으로 중복 구독 방지)
 CREATE TABLE subscriptions (
   id         INT AUTO_INCREMENT PRIMARY KEY,
   user_id    INT NOT NULL,
@@ -72,7 +71,7 @@ INNER JOIN subscriptions s ON n.category = s.category
 WHERE s.user_id = ?
 ORDER BY n.created_at DESC;
 
--- 구독 추가 (중복 방지: INSERT IGNORE)
+-- 구독 추가 (이미 구독 중이면 에러 없이 무시)
 INSERT IGNORE INTO subscriptions (user_id, category) VALUES (?, ?);
 ```
 
@@ -81,47 +80,46 @@ INSERT IGNORE INTO subscriptions (user_id, category) VALUES (?, ?);
 ## 4. 인프라 및 배포 기록
 
 **클라우드 서버 (GCP VM)**
-- 인스턴스: GCP VM (bootcamp-1, asia-northeast3-a)
-- OS: Ubuntu 24.04
-- Node.js + MariaDB 설치 후 `/home/flathfk/farmnews`에서 서버 실행
-- `nohup node server.js &` 로 백그라운드 실행
+- 인스턴스: GCP VM (bootcamp-1, asia-northeast3-a) · Ubuntu 24.04
+- `/home/flathfk/farmnews` 디렉토리에서 Node.js 서버 실행
+- `nohup node server.js &` 로 백그라운드 실행 유지
 
 **도메인 연결 (Cloudflare Tunnel)**
 - 별도 도메인 구매 없이 `cloudflared tunnel --url http://localhost:3000` 으로 HTTPS 터널 생성
-- Cloudflare가 자동으로 SSL 인증서 적용 → 누구나 HTTPS로 접속 가능
+- Cloudflare가 자동으로 SSL 인증서를 적용해 누구나 HTTPS로 접속 가능한 상태로 배포
 
 ---
 
 ## 5. 트러블슈팅
 
 **사례 1: node 프로세스 중복 실행으로 인한 포트 충돌**
-- 문제: `nohup node server.js &`를 여러 번 실행하면서 3000번 포트에 node 프로세스가 5~6개 쌓여 서버가 응답하지 않음
-- 해결: `kill $(lsof -t -i:3000)` 으로 3000번 포트 점유 프로세스를 전부 종료한 뒤 서버를 단 하나만 재실행
+- 문제: `nohup node server.js &` 를 여러 번 실행하면서 3000번 포트에 node 프로세스가 5~6개 쌓여 서버가 응답하지 않는 상황이 반복됐습니다.
+- 해결: `kill $(lsof -t -i:3000)` 으로 3000번 포트를 점유한 프로세스를 전부 종료한 뒤 서버를 하나만 재실행했습니다.
 
 **사례 2: JWT 토큰 만료 후 조용한 실패**
-- 문제: 토큰이 만료되면 API 요청이 401로 실패하는데 사용자에게 아무 안내 없이 화면이 빈 채로 멈춤
-- 해결: 프론트엔드에 `api()` 공통 함수를 만들어 401 응답 시 자동으로 로그아웃 처리 + 안내 메시지 표시
+- 문제: 토큰이 만료되면 API 요청이 401로 실패하는데 사용자에게 아무 안내 없이 화면이 빈 채로 멈췄습니다.
+- 해결: 프론트엔드에 `api()` 공통 함수를 만들어 401 응답 시 자동으로 로그아웃 처리와 안내 메시지를 함께 띄우도록 했습니다.
 
 **사례 3: 구독 해지 후 기사 잔상 문제**
-- 문제: 카테고리 구독을 해지해도 해당 카테고리 기사가 피드에 그대로 남아있음
-- 해결: `curFilter` 상태 변수로 현재 필터를 추적하고, 구독 해지 시 `curFilter`를 남은 구독 카테고리 배열로 즉시 업데이트 후 `rerender()` 호출
+- 문제: 카테고리 구독을 해지해도 해당 카테고리 기사가 피드에 그대로 남아있었습니다.
+- 해결: `curFilter` 상태 변수로 현재 필터를 추적하고 구독 해지 시 `curFilter`를 남은 구독 카테고리 배열로 즉시 업데이트한 뒤 `rerender()` 를 호출하도록 수정했습니다.
 
 **사례 4: DB 연결 코드 중복**
-- 문제: 모든 API 라우터마다 `getConnection()` + `try/finally { conn.release() }` 패턴이 반복됨
-- 해결: `query(sql, params)` 헬퍼 함수로 추상화해서 라우터 코드를 절반으로 줄임
+- 문제: 모든 API 라우터마다 `getConnection()` + `try/finally { conn.release() }` 패턴이 반복돼 코드가 길고 지저분했습니다.
+- 해결: `query(sql, params)` 헬퍼 함수로 추상화해서 라우터 코드를 절반으로 줄였습니다.
 
 ---
 
 ## 6. 최종 회고
 
-8시간 동안 기획부터 배포까지 혼자 완수하면서 풀스택 개발의 전체 흐름을 직접 경험했습니다.
+8시간 안에 기획부터 배포까지 혼자 완수했습니다. 처음에는 단순히 뉴스 목록을 보여주는 서비스를 구상했으나 구독 기능을 붙이면서 생각보다 프론트엔드 상태 관리가 복잡해졌습니다. 버튼 색이 실제 구독 상태와 어긋나거나 해지한 카테고리 기사가 피드에 남아있는 버그를 반복해서 마주치면서 UI 상태와 서버 데이터를 어떻게 동기화할지 고민하는 시간이 길었습니다. 결국 `curFilter`라는 단일 상태 변수로 현재 필터를 추적하고 그 값을 기준으로 렌더링하는 구조로 정리하면서 버그가 해소됐고 상태 관리가 왜 중요한지 직접 체감했습니다.
 
 **배운 점**
-- JWT 인증 흐름: 로그인 → 토큰 발급 → 헤더에 담아 요청 → 미들웨어 검증의 전체 사이클을 직접 구현하면서 왜 이 구조가 필요한지 체감했습니다.
-- SQL JOIN의 실전 활용: 구독 피드 기능을 만들면서 단순 SELECT가 아닌 INNER JOIN으로 두 테이블을 연결해 필요한 데이터만 가져오는 쿼리를 직접 설계했습니다.
-- 상태 관리의 중요성: 프론트엔드에서 `curFilter`, `subscribed` 등 상태 변수를 잘못 관리하면 UI가 실제 데이터와 어긋나는 버그가 생긴다는 것을 여러 번 경험하며 배웠습니다.
+- JWT 인증 흐름을 직접 구현하면서 왜 토큰 기반 인증이 필요한지 체감했습니다. 로그인 → 토큰 발급 → 헤더에 담아 요청 → 미들웨어 검증의 전체 사이클을 손으로 짜보니 평소에 당연하게 쓰던 로그인 기능이 다르게 보였습니다.
+- INNER JOIN을 단순 문법이 아니라 실제 기능 구현에 써봤습니다. 구독 피드를 만들면서 subscriptions 테이블과 news 테이블을 JOIN해야 한다는 걸 스스로 설계하는 과정이 SQL을 진짜로 이해하는 계기가 됐습니다.
+- 프론트엔드 상태 관리의 중요성을 뼈저리게 느꼈습니다. 상태를 한 곳에서 관리하고 그 상태 기준으로 렌더링하는 패턴이 왜 중요한지 알게 됐습니다.
 
 **개선하고 싶은 점**
-- 실시간 뉴스 데이터 연동 (현재는 수동 입력된 샘플 데이터)
-- 뉴스 검색 기능 추가
-- React로 마이그레이션해서 컴포넌트 기반으로 재설계
+- 현재 뉴스 데이터는 직접 DB에 입력한 샘플 데이터입니다. 실제 뉴스 API와 연동해서 실시간 데이터를 제공하면 서비스로서 의미가 생길 것 같습니다.
+- 뉴스 검색 기능이 없어서 특정 키워드로 찾아보기 어렵습니다. 다음 버전에서는 검색 기능을 추가하고 싶습니다.
+- Vanilla JS로 구현한 프론트엔드를 React로 마이그레이션하면 컴포넌트 단위로 상태를 관리할 수 있어 지금처럼 상태 버그가 덜 생길 것 같습니다. 웹 프레임워크 단계에서 꼭 다시 만들어보고 싶습니다.
