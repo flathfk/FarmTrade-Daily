@@ -11,6 +11,21 @@
 **프로젝트 소개:**
 1차 해커톤에서 만든 FarmTrade 농산물 선물거래 시뮬레이터의 연장선입니다. 거래 판단의 근거가 되는 시장 뉴스를 직접 구독하고 모아볼 수 있는 서비스를 목표로 만들었습니다. 옥수수·밀·대두 등 곡물부터 원유·금·은·구리 등 에너지/금속 그리고 커피·코코아·설탕 등 소프트 원자재까지 16개 카테고리의 뉴스를 제공합니다. 카테고리 단위로 구독을 설정하면 로그인 직후 구독 중인 뉴스만 모아서 볼 수 있습니다.
 
+
+## 서비스 화면
+
+**로그인**
+
+<img width="1920" height="1080" alt="1" src="https://github.com/user-attachments/assets/f65c49cb-2331-44c8-a5ff-77c270953c7e" />
+
+**전체 뉴스**
+
+<img width="1920" height="1080" alt="2" src="https://github.com/user-attachments/assets/417a49bf-10af-4bdb-aa95-2793f578e705" />
+
+**구독 모음**
+
+<img width="1920" height="1080" alt="3" src="https://github.com/user-attachments/assets/c162ebb3-0735-4e5b-ba99-9add0e436221" />
+
 ---
 
 ## 2. 백엔드 구성 및 라우팅
