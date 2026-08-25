@@ -1,5 +1,22 @@
 # FarmTrade Daily
 
+> **한경 × 토스뱅크 FullStack-LLM 부트캠프 2차 해커톤** · 2026.04 · 개인 프로젝트
+
+| | |
+| --- | --- |
+| **주제** | 카테고리별 농산물·원자재 뉴스 구독 서비스 (16개 카테고리) |
+| **기간 / 형태** | 2026.04 · 개인 |
+| **스택** | Node.js(Express) · MariaDB · JWT · Vanilla JS · Tailwind CSS · GCP · Cloudflare Tunnel |
+| **직접 구현** | 회원 인증(bcrypt 해시 + JWT) · 뉴스/구독 CRUD API · DB 스키마 설계 · 배포 |
+
+**FarmTrade 시리즈 2편** — [1차 시뮬레이터](https://github.com/flathfk/farmtrade-simulator) → **2차 뉴스 구독** → [3차 가격 알림 + 통합](https://github.com/flathfk/farmtrade-alert)
+
+1차에서 만든 선물거래 시뮬레이터의 연장선입니다. 실제 트레이더는 가격만 보고 판단하지 않고 작황·원유·금리 같은 시장 뉴스를 함께 봅니다. 그 판단 근거를 모아보는 서비스로 확장했습니다.
+
+**직접 다룬 것** — 인증 미들웨어로 `/api/*` 전 구간 보호, 구독 테이블에 `user_id + category` 복합 UNIQUE로 중복 구독 차단, 카테고리별 조회 쿼리 분리.
+
+---
+
 ## 1. 프로젝트 개요
 
 **수행 주제:** 카테고리별 농산물·원자재 뉴스 구독 서비스
